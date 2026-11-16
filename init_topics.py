@@ -60,7 +60,6 @@ def connect(bootstrap_server: str, timeout_seconds: int) -> KafkaAdminClient:
                 bootstrap_servers=bootstrap_server,
                 client_id="legal-kafka-topic-initializer",
                 request_timeout_ms=10_000,
-                api_version_auto_timeout_ms=5_000,
             )
         except Exception as exc:  # Kafka may still be electing its controller.
             last_error = exc
