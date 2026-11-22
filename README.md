@@ -24,6 +24,26 @@ image or a managed Kafka service.
 The replication factor is `1` because Phase 1 uses one broker. Kafka is durable
 across container restarts but remains a single point of failure.
 
+## Event flow
+
+```mermaid
+flowchart LR
+  API[Web API] -->|judgment.uploaded| U[(Upload topic)]
+  U --> KG[KG consumer group]
+  U --> EMB[Embedding consumer group]
+  KG -->|processing.status| STATUS[(Status topic)]
+  EMB -->|processing.status| STATUS
+  KG -->|processing.failed| FAILED[(Failure topic)]
+  EMB -->|processing.failed| FAILED
+```
+
+The two upload consumers use different group IDs, so each receives every
+`judgment.uploaded` event; partitions distribute work within each group. Workers
+publish completion or terminal failure records keyed by document ID. The
+`kg.extracted` and `embeddings.created` topics are provisioned for artifact
+notifications but are not currently emitted by the workers, which import their
+results directly into Neo4j and Qdrant.
+
 ## Build and run locally
 
 Building downloads the official Kafka base image and Python topic-admin package:
